@@ -32,11 +32,9 @@ const HomePage = () => {
             {user.isLoggedIn && (
                 <div>
                     <button onClick={handleLogout}>登出</button>
-                    <div>
-                        <Link to="/warehouse">前往仓库页面</Link>
-                        <Link to="/orders">订单管理页面 <span>{ordersCount > 0 && <span style={{ color: 'red', marginLeft: '5px' }}>{ordersCount}</span>}</span></Link>
-                        <Link to="/products">商品页面</Link>
-                    </div>
+                    <div><Link to="/warehouse">前往仓库页面</Link></div>
+                    <div><Link to="/orders">订单管理页面 <span>{ordersCount > 0 && <span style={{ color: 'red', marginLeft: '5px' }}>{ordersCount}</span>}</span></Link></div>
+                    <div><Link to="/products">商品页面</Link></div>
                 </div>
             )}
             {!user.isLoggedIn && (
