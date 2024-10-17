@@ -19,7 +19,7 @@ const ProductRow = ({ product, onPurchase, onAvailabilityChange }) => {
     const handleConfirmPurchase = async () => {
         if (quantity > 0) {
             try {
-                const response = await axios.post('/api/orders', {
+                const response = await axios.post('http://localhost:3001/api/orders', {
                     productId: product_id,
                     supplier: supplier,
                     price: price,
@@ -54,24 +54,24 @@ const ProductRow = ({ product, onPurchase, onAvailabilityChange }) => {
             <td>{product.selling_price}</td>
             <td>{product.purchase_price}</td>
             <td>{product.is_available === 1 ? 'Yes' : 'No'}</td>
-            <td>
-                <button onClick={() => onAvailabilityChange(!product.is_available)}>
+            <td className='actions1'>
+                <button onClick={() => onAvailabilityChange(!product.is_available)} style={{ width: '70px' }} >
                     {product.is_available === 1 ? 'Shelf' : 'Unshelf'}
                 </button>
                 <button onClick={() => { setIsEditingQuantity(true); setIsModalOpen(true); }}>Purchase</button>
                 {isModalOpen && (
                     <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
                         <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <h3>正在下单{product.name}</h3>
                             <input
                                 type="text"
                                 value={quantity}
                                 onChange={handleQuantityChange}
                                 placeholder="Quantity"
-                                style={{ marginLeft: '10px' }}
                             />
                             <div>
                                 <button onClick={() => setQuantity(Math.max(quantity - 1, 0))}>-</button>
-                                <span>{quantity}</span>
+                                <span>{quantity} </span>
                                 <button onClick={() => setQuantity(quantity + 1)}>+</button>
                             </div>
                             <div style={{ marginTop: '10px' }}>Total Price: {totalPrice.toFixed(2)}</div>
@@ -83,7 +83,7 @@ const ProductRow = ({ product, onPurchase, onAvailabilityChange }) => {
                     </div>
                 )}
             </td>
-        </tr>
+        </tr >
     );
 };
 

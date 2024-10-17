@@ -1,3 +1,302 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 75px;
+}
+
+body {
+    font-weight: 400;
+    overflow-x: hidden;
+    position: relative;
+    background-color: #f3eff0 !important;
+    color: #121212 !important;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+h1,
+h2.h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+}
+
+p,
+a,
+li,
+button,
+ul {
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+img {
+    width: 100%;
+    height: auto;
+}
+
+/* button {
+    border: 0;
+    background-color: transparent;
+} */
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+}
+
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 20;
+    background-color: #f3eff0;
+}
+
+.scrolled {
+    box-shadow: 0 7px 10px rgba(0, 0, 0, 0.3);
+}
+
+.header .header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 0.5rem;
+}
+
+.header .header-container .header-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.home {
+    position: relative;
+    top: 14vh;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* 登录界面 */
+.login {
+    position: relative;
+    margin: 0 auto;
+    top: 40vh;
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main-overlay {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    display: flex;
+    margin: 10px auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.main-con {
+    flex: 1;
+    padding: 10px;
+    color: #333;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+}
+
+.login-container {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.login-container h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.login-container label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+    font-weight: 700;
+}
+
+.login-container input[type="text"],
+.login-container input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-container button:hover {
+    background-color: #0056b3;
+}
+
+.login-container p {
+    text-align: center;
+    margin-top: 15px;
+    color: #777;
+}
+
+.login-container a {
+    color: #007bff;
+    transition: background-color 0.3s ease;
+}
+
+.login-container a:hover {
+    color: #0056b3;
+}
+
+/* 主页 */
+.homepage h1 {
+    margin-top: 140px;
+    font-size: 64px;
+}
+
+.homepage button {
+    width: 100px;
+    margin-top: 20px;
+    padding: 10px;
+    border: black solid 2px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.homelink {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 50px;
+    padding-top: 50px;
+}
+
+.homelist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.homelist a {
+    color: #121212;
+    font-size: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+.homelist a::before {
+    content: '•';
+    color: #121212;
+    font-size: 48px;
+    margin-right: 8px;
+    position: absolute;
+    left: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* 仓库增加 */
+.add-product-form input {
+    margin-right: 5px;
+}
+
+.add-product-form input[type="number"] {
+    width: 50px;
+}
+
+/* 仓库表单 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: left;
+}
+
+thead {
+    background-color: #f2f2f2;
+}
+
+th,
+td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+th {
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #eaeaea;
+}
+
+td {
+    vertical-align: top;
+}
+
+.actions1 button {
+    margin-right: 8px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    font-size: 14px;
+}
+
+.actions1 button:hover {
+    background-color: #0056b3;
+}
+
+/* 下单卡片 */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -5,17 +304,262 @@
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    /* 半透明背景 */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    /* 确保在最上层 */
 }
 
-.modal-content {
+.modal-overlay .modal-content {
+    width: 240px;
+    height: 200px;
     background-color: white;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-overlay .modal-content input {
+    margin: 20px 0 10px 0;
+}
+
+.modal-overlay .modal-content button {
+    margin-right: 8px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+    background-color: #a1a1a1;
+}
+
+.modal-overlay .modal-content button:hover {
+    background-color: #797778;
+}
+
+/* 商品卡片 */
+.card-list {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.card {
+    box-shadow: 1px 7px 10px rgba(0, 0, 0, 0.3);
+    height: 420px;
+    width: 262.5px;
+    margin-left: 30px;
+    margin-top: 30px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card img {
+    width: 100%;
+    height: 50%;
+    border-radius: 10px;
+}
+
+.card .card-content h3 {
+    font-weight: 700;
+    font-size: 1.3rem;
+}
+
+.card .card-content p {
+    width: 100%;
+    text-align: left;
+    color: #4e4e4e;
+}
+
+.card .card-content .price {
+    font-size: 24px;
+    font-weight: 700;
+    padding-top: 5px;
+}
+
+.card-content .actions {
+    width: 100px;
+    height: 35px;
+    border-radius: 15px;
+    border-bottom-right-radius: 0;
+    background-color: #121212;
+    margin-top: 40px;
+    margin-bottom: 30px;
+    padding: 5px 0 0 10px;
+}
+
+.actions button {
+    border: 0;
+    background-color: transparent;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 400;
+    text-align: center;
+}
+
+/* 订单模块 */
+/* 为选项卡设置样式 */
+.tab {
+    overflow: hidden;
+}
+
+/* 为用于打开选项卡内容的按钮设置样式 */
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0 16px;
+    margin-top: 10px;
+    transition: 0.3s;
+}
+
+.tab button:hover {
+    color: #0056b3;
+    font-weight: 700;
+}
+
+/* 创建一个活动的/当前的 tablink 类 */
+.tab button.active {
+    color: #007bff;
+    font-weight: 700;
+}
+
+/* 设置选项卡内容的样式 */
+.tabcontent {
+    display: none;
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+.selling_order {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.order {
+    width: 380px;
+    height: 195px;
+    margin-right: 20px;
+    border: #c2c2c2 solid 1px;
+    background-color: #f3eff0;
+    padding: 10px 20px 20px 20px;
+    margin-top: 15px;
+}
+
+.order .order_id {
+    width: 100%;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: #c2c2c2 solid 1px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.status-ongoing {
+    color: red;
+}
+
+.status-completed {
+    color: green;
+}
+
+.status-failed {
+    color: gray;
+}
+
+.order img {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+}
+
+.order .order_details {
+    color: #4e4e4e;
+    display: inline-block;
+    position: relative;
+    top: -15px;
+    left: 20px;
+}
+
+.order .order_details span {
+    font-weight: 400;
+    margin-right: 20px;
+}
+
+.order .order_name span {
+    margin-left: 20px;
+}
+
+.order .order_name {
+    font-weight: 700;
+    color: #121212;
+}
+
+.order .order_action {
+    width: 100%;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-top: #c2c2c2 solid 1px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.order button {
+    margin-top: 10px;
+    margin-left: 8px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    font-size: 14px;
+}
+
+.order button:hover {
+    background-color: #0056b3;
+}
+
+.logistics .order {
+    height: 418px;
+}
+
+.logistics .order .order_details {
+    top: 0;
+    left: 0;
+}
+
+.logistics .order_status {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 5px;
+}
+
+.logistics .order_status div {
+    position: relative;
+    height: 30px;
+    line-height: 30px;
+    font-weight: 600;
+    left: 20px;
+}
+
+.logistics .order_status div::before {
+    content: '•';
+    font-size: 42px;
+    margin-right: 8px;
+    position: absolute;
+    left: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.logistics .order_status span {
+    position: relative;
+    left: 20px;
 }

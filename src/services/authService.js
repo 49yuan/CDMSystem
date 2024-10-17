@@ -5,7 +5,9 @@ export const login = async (username, password) => {
     return new Promise((resolve) => {
         setTimeout(() => {
             if (username === 'admin' && password === 'password') { // 示例用户名和密码  
-                resolve({ success: true, token: 'mock-token' });
+                resolve({ success: true, token: 'mock-admin-token', userType: 'administrator' });
+            } else if (username === 'user' && password === 'password') {
+                resolve({ success: true, token: 'mock-user-token', userType: 'user' });
             } else {
                 resolve({ success: false });
             }

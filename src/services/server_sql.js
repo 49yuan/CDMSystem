@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 app.use(cors());
 
@@ -118,21 +118,23 @@ app.put('/api/products/:id', (req, res) => {
     });
 });
 
-// 添加新商品
-// app.post('/api/products', (req, res) => {
-//     const name = req.body.name;
-//     const category = req.body.category;
-//     const quantity = req.body.quantity;
-//     const sellingPrice = req.body.selling_price;
-//     const purchasePrice = req.body.purchase_price;
-//     const isAvailable = req.body.is_available;
+//添加新商品
+app.post('/api/products', (req, res) => {
+    const name = req.body.name;
+    const category = req.body.category;
+    const quantity = req.body.quantity;
+    const sellingPrice = req.body.selling_price;
+    const purchasePrice = req.body.purchase_price;
+    const description = req.body.description;
+    const image = req.body.image;
+    const isAvailable = req.body.is_available;
 
-//     const sql = `INSERT INTO products (name, category, quantity, selling_price, purchase_price, is_available) VALUES (?, ?, ?, ?, ?, ?)`;
-//     db.query(sql, [name, category, quantity, sellingPrice, purchasePrice, isAvailable], (err, results) => {
-//         if (err) throw err;
-//         res.status(201).send('Product added successfully');
-//     });
-// });
+    const sql = `INSERT INTO products (name, category, quantity, selling_price, purchase_price, description, image, is_available) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.query(sql, [name, category, quantity, sellingPrice, purchasePrice, description, image, isAvailable], (err, results) => {
+        if (err) throw err;
+        res.status(201).send('Product added successfully');
+    });
+});
 
 // 删除商品
 // app.delete('/api/products/:id', (req, res) => {
