@@ -2,7 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-
+const { v4: uuidv4 } = require('uuid');
 const app = express();
 const port = 3001;
 
@@ -38,19 +38,6 @@ app.get('/api/products', (req, res) => {
         if (err) throw err;
         res.json(results);
     });
-});
-//获取合并后的订单信息
-app.get('/api/orders', async (req, res) => {
-    try {
-        const { success, data } = await mergeOrders();
-        if (success) {
-            res.json(data);
-        } else {
-            res.status(500).json({ message: 'Failed to merge orders', error: data.error }); // 如果失败，返回错误信息  
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error: error.message }); // 处理其他可能的错误  
-    }
 });
 
 const addOrder = (productId, supplier, price, quantity, purchase, destination, phone) => {
@@ -96,7 +83,36 @@ app.put('/api/products/:id', (req, res) => {
         }
     });
 });
+//更新物流状态
+app.put('/api/logistics/:id', (req, res) => {
+    const id = req.params.id;
+    const status = req.body.status;
 
+    const sql = `UPDATE logistics SET status = ? WHERE id = ?`;
+    connection.query(sql, [status, id], (err, results) => {
+        if (err) throw err;
+        if (results.affectedRows > 0) {
+            res.status(200).send('Confirm receipt');
+        } else {
+            res.status(404).send('Fail to confirm receipt');
+        }
+    });
+});
+//更新订单状态
+app.put('/api/changeos/:order_id', (req, res) => {
+    const id = req.params.order_id;
+    const status = req.body.status;
+
+    const sql = `UPDATE orders SET status = ? WHERE order_id = ?`;
+    connection.query(sql, [status, id], (err, results) => {
+        if (err) throw err;
+        if (results.affectedRows > 0) {
+            res.status(200).send('Failed receipt success');
+        } else {
+            res.status(404).send('Fail to failde receipt');
+        }
+    });
+});
 //添加新商品
 app.post('/api/products', (req, res) => {
     const name = req.body.name;
@@ -114,31 +130,6 @@ app.post('/api/products', (req, res) => {
         res.status(201).send('Product added successfully');
     });
 });
-
-// 检查库存并处理订单的路由
-app.get('/api/checkInventory', async (req, res) => {
-    const { productId, quantity } = req.query;
-    try {
-        const stock = await queryStock(productId);
-        if (stock < quantity) {
-            // 库存不足，计算需要补货的数量
-            const replenishmentNeeded = await calculateReplenishment(productId) + quantity - stock;
-            // 保存订单状态为 'ongoing' 并返回需要补货的信息
-            await saveOrder(productId, quantity, 'initator', 'destination', 'initator_phone', 'ongoing', 'selling');
-            res.json({ error: '库存不足', productId, needToStock: replenishmentNeeded });
-        } else {
-            // 库存足够，创建订单并发货
-            const orderId = await saveOrder('initator', productId, quantity, 'destination', 'initator_phone', 'ongoing', 'selling');
-            const logistics = await dispatchLogistics(orderId, productId, quantity);
-            await updateOrderStatus(orderId, 'complete');
-            res.json({ success: true, orderId, logistics });
-        }
-    } catch (error) {
-        console.error('请求失败:', error);
-        res.status(500).json({ error: '服务器内部错误' });
-    }
-});
-
 
 async function completeInboundOrder(order_id) {
     try {
@@ -176,24 +167,93 @@ app.post('/api/completedorder', async (req, res) => {
         res.status(200).json({ success: true });
     }
 });
+async function mergeOrders() {
+    try {
+        const mergedOrders = await findAndMergeOngoingOrders();
+        return { success: true, data: mergedOrders };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+//获取合并后的订单信息
+app.get('/api/orders', async (req, res) => {
+    try {
+        const { success, data } = await mergeOrders();
+        if (success) {
+            res.json(data);
+        } else {
+            res.status(500).json({ message: 'Failed to merge orders', error: data.error }); // 如果失败，返回错误信息  
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Internal server error', error: error.message }); // 处理其他可能的错误  
+    }
+});
 
+// 检查库存并处理订单的路由
+app.get('/api/checkInventory', async (req, res) => {
+    const { orderId, quantity } = req.query
+    console.log(orderId, quantity);
+    try {
+        //根据orderId从orders表中获取product_id、initiator_or_supplier、destination和phone的值并解构
+        const results = await connection.query('SELECT * FROM orders WHERE order_id = ?', [orderId]);
+        console.log('orderDetails:', results);
+        const { product_id, destination, phone, initiator_or_supplier } = results[0];
+        const stock = await connection.query('SELECT quantity FROM products WHERE id = ?', [product_id]);
+        if (stock < quantity) {
+            // 库存不足，计算需要补货的数量
+            const replenishmentNeeded = await calculateReplenishment(product_id) + quantity - stock;
+            res.json({ error: '库存不足', product_id, needToStock: replenishmentNeeded });
+        } else {
+            // 库存足够，仓库发货产生物流订单并更改订单状态
+            const logistics = await dispatchLogistics(orderId, product_id, quantity, destination, phone, initiator_or_supplier);
+            await updateOrderStatus(orderId, 'completed');
+            res.json({ success: true, orderId, logistics });
+        }
+    } catch (error) {
+        console.error('请求失败:', error);
+        res.status(500).json({ error: '服务器内部错误' });
+    }
+});
+
+// 11. 查询所有物流单信息
+app.get('/api/logistics', (req, res) => {
+    const sql = 'SELECT * FROM logistics ORDER BY FIELD(status, "ongoing", "completed", "failed")';
+    connection.query(sql, (err, results) => {
+        if (err) throw err;
+        res.json(results);
+    });
+});
+app.get('/api/getproductname', (req, res) => {
+    const { productId } = req.query;
+    const sql = 'SELECT name FROM products WHERE id = ?';
+    connection.query(sql, [productId], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: '数据库查询错误' });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ error: '产品未找到' });
+        }
+        res.json(results[0]);
+    });
+})
 // 3. 分发物流函数
-async function dispatchLogistics(orderId, productId, quantity) {
-    const maxShipment = await getMaxShipment(productId); // 获得最大物流发货限制
+async function dispatchLogistics(orderId, productId, quantity, destination, phone, name) {
+    const maxShipment = await getMaxShipment(productId);
     const logistics = [];
 
-    //发出一个物流单，返回物流单在数据库中的id
-    async function createLogisticsOrder(orderId, productId, quantity, name, destination, phone, time, status) {
+    async function createLogisticsOrder(orderId, productId, quantity, destination, phone, name) {
+        const pickcode = generateRandomString();
         const result = await connection.query(
-            'INSERT INTO Logistics (orderId, productId, quantity,name,destination,phone,time,status) VALUES (?, ?, ?, ?, ?)',
-            [orderId, productId, quantity, name, destination, phone, time, status]);
+            'INSERT INTO Logistics (order_id, product_id, quantity, destination, phone, status,initiator,pickcode) VALUES (?, ?, ?, ?, ?, ?,?,?)',
+            [orderId, productId, quantity, destination, phone, 'ongoing', name, pickcode]
+        );
         return result.insertId;
     }
 
-    //根据数据库返回物流单，然后返回物流单id的列表
     while (quantity > 0) {
+        console.log('quantity, maxShipment:', quantity, maxShipment);
         const shipmentQuantity = Math.min(quantity, maxShipment);
-        logistics.push(await createLogisticsOrder(orderId, productId, shipmentQuantity));
+        logistics.push(await createLogisticsOrder(orderId, productId, shipmentQuantity, destination, phone, name));
         await decreaseStock(productId, shipmentQuantity);
         quantity -= shipmentQuantity;
     }
@@ -210,49 +270,27 @@ async function calculateReplenishment(productId) {
     return ongoingSellingOrders + safeStock - ongoingPurchaseOrders;
 }
 
-// 6. 合并订单信息函数
-async function mergeOrders() {
-    try {
-        const mergedOrders = await findAndMergeOngoingOrders();
-        return { success: true, data: mergedOrders };
-    } catch (error) {
-        return { success: false, error: error.message };
-    }
+
+function generateRandomString() {
+    return uuidv4().replace(/-/g, '').slice(0, 6); // 生成 UUID 并去掉连接符，取前 19 位
 }
 
 // 1. 查询库存
 async function queryStock(productId) {
     const result = await connection.query('SELECT quantity FROM products WHERE id = ?', [productId]);
+    console.log(result);
     return result[0] ? result[0].quantity : 0;
 }
 
 // 2. 保存订单
-async function saveOrder(orderData) {
-    // 构建插入新订单的SQL语句
-    const sql = `
-        INSERT INTO Orders 
-        (order_type, status, initiator_or_supplier, destination, product_id, quantity, price) 
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-    const results = await connection.query(sql, [
-        orderData.order_type,
-        orderData.status,
-        orderData.initiator_or_supplier,
-        orderData.destination,
-        orderData.product_id,
-        orderData.quantity,
-        orderData.price
-    ]);
-    return results.insertId; // 返回新插入的订单ID
-}
-
 // 3. 更新订单状态
 async function updateOrderStatus(orderId, status) {
-    await connection.query('UPDATE orders SET status = ? WHERE id = ?', [status, orderId]);
+    await connection.query('UPDATE orders SET status = ? WHERE order_id = ?', [status, orderId]);
 }
 
 async function getOrderDetails(order_id) {
-    const rows = connection.query('SELECT * FROM orders WHERE order_id = ?', [order_id]);
+    const rows = await connection.query('SELECT * FROM orders WHERE order_id = ?', [order_id]);
+    console.log(rows);
     return rows[0];
 }
 
@@ -262,19 +300,19 @@ async function increaseStock(product_id, quantity) {
 }
 // 6. 减少库存
 async function decreaseStock(productId, quantity) {
-    await connection.query('UPDATE products SET stock = stock - ? WHERE id = ?', [quantity, productId]);
+    await connection.query('UPDATE products SET quantity = quantity - ? WHERE id = ?', [quantity, productId]);
 }
 
 // 7. 获取最大物流发货量
 async function getMaxShipment(productId) {
-    const result = await connection.query('SELECT max_shipment FROM products WHERE id = ?', [productId]);
-    return result[0] ? result[0].max_shipment : 0;
+    const result = await connection.query('SELECT max_d_quantity FROM products WHERE id = ?', [productId]);
+    return result[0] ? result[0].max_d_quantity : 0;
 }
 
 // 8. 查询ongoing状态的selling类订单
 async function getOngoingSellingOrders(productId) {
     const result = await connection.query(
-        'SELECT SUM(quantity) AS total FROM orders WHERE product_id = ? AND status = ? AND category = ?',
+        'SELECT SUM(quantity) AS total FROM orders WHERE product_id = ? AND status = ? AND order_type = ?',
         [productId, 'ongoing', 'selling']
     );
     return result[0] ? result[0].total : 0;
@@ -283,7 +321,7 @@ async function getOngoingSellingOrders(productId) {
 // 9. 查询ongoing状态的purchase类订单
 async function getOngoingPurchaseOrders(productId) {
     const result = await connection.query(
-        'SELECT SUM(quantity) AS total FROM orders WHERE product_id = ? AND status = ? AND category = ?',
+        'SELECT SUM(quantity) AS total FROM orders WHERE product_id = ? AND status = ? AND order_type = ?',
         [productId, 'ongoing', 'purchase']
     );
     return result[0] ? result[0].total : 0;
@@ -291,22 +329,24 @@ async function getOngoingPurchaseOrders(productId) {
 
 // 10. 查询安全库存
 async function getSafeStock(productId) {
-    const result = await connection.query('SELECT safe_stock FROM products WHERE id = ?', [productId]);
-    return result[0] ? result[0].safe_stock : 0;
-}
-
-// 11. 查询所有物流单信息
-async function queryAllLogistics() {
-    const result = await connection.query('SELECT * FROM logistics');
-    return result;
+    const result = await connection.query('SELECT safety_stock FROM products WHERE id = ?', [productId]);
+    return result[0] ? result[0].safety_stock : 0;
 }
 
 // 12. 查询并合并ongoing状态的订单
 async function findAndMergeOngoingOrders() {
-    const mergedOrders = [];
     // 首先获取数据库中的特有的组合
+    // const combinations = await connection.query(
+    //     'SELECT DISTINCT initiator_or_supplier, product_id, destination, price FROM orders WHERE status = ? AND order_type = ?',
+    //     ['ongoing', 'selling']
+    // );
+
     const combinations = await connection.query(
-        'SELECT DISTINCT initiator_or_supplier, product_id, destination FROM orders WHERE status = ? AND order_type = ?',
+        'SELECT initiator_or_supplier, product_id, destination, price, COUNT(*) AS count ' +
+        'FROM Orders ' +
+        'WHERE status = ? AND order_type = ? ' +
+        'GROUP BY initiator_or_supplier, product_id, destination, price ' +
+        'HAVING COUNT(*) >= 2;',
         ['ongoing', 'selling']
     );
 
@@ -317,23 +357,30 @@ async function findAndMergeOngoingOrders() {
         );
         const total = totalQuantity[0].total;
 
+        console.log('combination:', combination);
+        console.log(total);
         // 删除旧的订单
         await connection.query(
             'DELETE FROM orders WHERE status = ? AND product_id = ? AND destination = ? AND initiator_or_supplier = ? AND order_type = ?',
             ['ongoing', combination.product_id, combination.destination, combination.initiator_or_supplier, 'selling']
         );
 
-        // 增加新的订单
-        const newOrder = await saveOrder({
-            order_type: 'selling',
-            status: 'ongoing',
-            initiator_or_supplier: combination.initiator_or_supplier,
-            destination: combination.destination,
-            product_id: combination.product_id,
-            quantity: total,
-            price: calculatePrice(total) // 假设你有一个函数来计算价格
-        });
-        mergedOrders.push(newOrder);
+        const sql = `
+        INSERT INTO Orders 
+        (order_type, status, initiator_or_supplier, destination, product_id, quantity, price,phone) 
+        VALUES (?, ?, ?, ?, ?, ?, ?,?)
+        `;
+        const addorder = await connection.query(sql, [
+            'selling',
+            'ongoing',
+            combination.initiator_or_supplier,
+            combination.destination,
+            combination.product_id,
+            total,
+            combination.price,
+            combination.phone,
+        ]);
+        console.log('Insert result:', addorder);
     }
     // 返回所有订单信息
     //const allOrders = await connection.query('SELECT * FROM orders ORDER BY FIELD(status, "ongoing", "complete", "failed")');

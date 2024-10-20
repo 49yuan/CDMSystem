@@ -57,12 +57,20 @@ const OrdersPage = () => {
 
     const handleShipment = (order) => {
         if (order.status === 'ongoing') {
-            axios.get('http://localhost:3001/api/checkInventory')
+            axios.get(`http://localhost:3001/api/checkInventory?orderId=${order.order_id}&quantity=${order.quantity}`)
+
                 .then(response => {
                     if (response.data.error) {
                         alert(`缺货，请补充${response.data.needToStock}件`);
                     } else {
                         alert('发货成功');
+                        const updatedOrders = orders.map(o => {
+                            if (o.order_id === order.order_id) {
+                                return { ...o, status: 'completed' };
+                            }
+                            return o;
+                        });
+                        setOrders(updatedOrders);
                     }
                 })
                 .catch(error => {
@@ -73,6 +81,7 @@ const OrdersPage = () => {
     };
     const handleCancel = (order) => {
         if (order.status === 'ongoing') {
+            const response = axios.put(`http://localhost:3001/api/changeos/${order.order_id}`, { status: 'failed' });
             const updatedOrders = orders.map(o => {
                 if (o.order_id === order.order_id) {
                     return { ...o, status: 'failed' };
@@ -130,23 +139,25 @@ const OrdersPage = () => {
 
                 <div id="purchase" className={`tabcontent ${activeTab === 'purchase' ? 'active' : ''}`}>
                     <h3>Outbound</h3>
-                    {orders.filter(order => order.order_type === 'purchase').map(order => (
-                        <div key={order.order_id} className='order'>
-                            <div className='order_id'>Order {order.order_id}
-                                <span className={`status ${order.status === 'ongoing' ? 'status-ongoing' : (order.status === 'completed' ? 'status-completed' : (order.status === 'failed' ? 'status-failed' : ''))}`}>{order.status}</span>
+                    <div className='purchase_order'>
+                        {orders.filter(order => order.order_type === 'purchase').map(order => (
+                            <div key={order.order_id} className='order'>
+                                <div className='order_id'>Order {order.order_id}
+                                    <span className={`status ${order.status === 'ongoing' ? 'status-ongoing' : (order.status === 'completed' ? 'status-completed' : (order.status === 'failed' ? 'status-failed' : ''))}`}>{order.status}</span>
+                                </div>
+                                <img src={order.image} alt={order.name} />
+                                <div className='order_details'>
+                                    <div className='order_name'>{order.name}<span>Quantity: {order.quantity}</span></div>
+                                    <span>Supplier: {order.initiator_or_supplier}</span>
+                                    <div>Phone: {order.phone}</div>
+                                    <div>Order time: {order.time}</div>
+                                </div>
+                                <div className='order_action'>
+                                    <button onClick={() => handleStatusChange(order)}>Warehousing</button>
+                                </div>
                             </div>
-                            <img src={order.image} alt={order.name} />
-                            <div className='order_details'>
-                                <div className='order_name'>{order.name}<span>Quantity: {order.quantity}</span></div>
-                                <span>Supplier: {order.initiator_or_supplier}</span>
-                                <div>Phone: {order.phone}</div>
-                                <div>Order time: {order.time}</div>
-                            </div>
-                            <div className='order_action'>
-                                <button onClick={() => handleStatusChange(order)}>Warehousing</button>
-                            </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
             </div>
         </div >

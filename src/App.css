@@ -460,6 +460,11 @@ table .low-stock {
     flex-wrap: wrap;
 }
 
+.purchase_order {
+    display: flex;
+    flex-wrap: wrap;
+}
+
 .order {
     overflow: hidden;
     width: 380px;
@@ -469,6 +474,10 @@ table .low-stock {
     background-color: #f3eff0;
     padding: 10px 20px 20px 20px;
     margin-top: 15px;
+}
+
+.selling_order .order {
+    height: 205px;
 }
 
 .order .order_id {
@@ -506,6 +515,11 @@ table .low-stock {
     left: 13px;
 }
 
+.selling_order .order .order_details {
+    top: -95px;
+    left: 112px;
+}
+
 .order .order_details span {
     font-weight: 400;
     margin-right: 20px;
@@ -522,6 +536,17 @@ table .low-stock {
 
 .order .order_action {
     width: 100%;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-top: #c2c2c2 solid 1px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.selling_order .order .order_action {
+    width: 100%;
+    position: relative;
+    top: -75px;
     margin-bottom: 10px;
     padding-bottom: 5px;
     border-top: #c2c2c2 solid 1px;
@@ -546,12 +571,21 @@ table .low-stock {
 }
 
 .logistics .order {
-    height: 418px;
+    height: 430px;
 }
 
 .logistics .order .order_details {
     top: 0;
     left: 0;
+    height: 370px;
+}
+
+.logistics .order .order_details .pdn {
+    font-weight: 700;
+}
+
+.logistics .order_action {
+    margin-top: 40px;
 }
 
 .logistics .order_status {
