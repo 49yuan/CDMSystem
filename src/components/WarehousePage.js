@@ -30,7 +30,7 @@ const WarehousePage = () => {
             const response = await axios.post('http://localhost:3001/api/products', newProduct);
             alert('Product added successfully!');
             setProducts([...products, response.data]); // 假设后端返回了新添加的商品数据，这里简单地将它添加到现有列表中  
-            setNewProduct({ name: '', category: '', quantity: 0, selling_price: 0, purchase_rrice: 0, description: '', image: '', is_available: true }); // 重置表单  
+            setNewProduct({ name: '', category: '', quantity: 0, safety_stock: 0, max_d_quantity: 0, selling_price: 0, purchase_rrice: 0, description: '', image: '', is_available: true }); // 重置表单  
             setAddingProduct(false); // 允许再次提交  
             setProducts(await axios.get('http://localhost:3001/api/products').then(response => response.data));
         } catch (error) {
@@ -39,7 +39,7 @@ const WarehousePage = () => {
         }
     };
 
-    const handlePurchase = async (productId, supplier, price, quantity) => {
+    const handlePurchase = async (productId, supplier, price, quantity, destination) => {
         try {
             // 发送采购请求到后端  
             const response = await axios.post(`http://localhost:3001/api/purchases`, {
@@ -47,6 +47,8 @@ const WarehousePage = () => {
                 supplier: supplier,
                 price: price,
                 quantity: quantity,
+                purchase: ' purchase',
+                destination: destination
             });
             alert('Purchase order created successfully!');
             // 重新加载商品列表（如果需要的话）  
@@ -98,6 +100,20 @@ const WarehousePage = () => {
                             placeholder="Quantity"
                             value={newProduct.quantity}
                             onChange={e => setNewProduct({ ...newProduct, quantity: parseInt(e.target.value, 10) || 0 })}
+                            required
+                        />
+                        <input
+                            type="number"
+                            placeholder="Safety Stock"
+                            value={newProduct.safety_stock}
+                            onChange={e => setNewProduct({ ...newProduct, safety_stock: parseFloat(e.target.value) || 0 })}
+                            required
+                        />
+                        <input
+                            type="number"
+                            placeholder="Max DQuantity"
+                            value={newProduct.max_d_quantity}
+                            onChange={e => setNewProduct({ ...newProduct, max_d_quantity: parseFloat(e.target.value) || 0 })}
                             required
                         />
                         <input
@@ -157,7 +173,7 @@ const WarehousePage = () => {
                             <ProductRow
                                 key={product.id}
                                 product={product}
-                                onPurchase={(supplier, price, quantity) => handlePurchase(product.id, supplier, price, quantity)}
+                                onPurchase={(supplier, price, quantity, destination) => handlePurchase(product.id, supplier, price, quantity, destination)}
                                 onAvailabilityChange={isAvailable => handleAvailabilityChange(product.id, isAvailable)}
                             />
                         ))}

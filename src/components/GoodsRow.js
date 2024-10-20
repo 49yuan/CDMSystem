@@ -10,6 +10,8 @@ const GoodsRow = ({ product }) => {
     const [quantity, setQuantity] = useState(0); // 初始数量为0，用户需要填写  
     const [isEditingQuantity, setIsEditingQuantity] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [destination, setDestination] = useState('厦门大学翔安校区二期鸟箱');
+    const [phone, setPhone] = useState('654321');
 
     const [user, setUser] = useState({ name: 'user', isLoggedIn: false, userType: '' });
     useEffect(() => {
@@ -34,20 +36,20 @@ const GoodsRow = ({ product }) => {
     const handleConfirmPurchase = async () => {
         if (quantity > 0) {
             try {
-                const response = await axios.post('http://localhost:3001/api/orders', {
+                const response = await axios.post('http://localhost:3001/api/purchases', {
                     productId: product_id,
                     supplier: supplier,
                     price: price,
                     quantity: quantity,
-                    purchase: 'outbound'
+                    purchase: 'selling',
+                    destination: destination,
+                    phone: phone
                 });
 
                 console.log('Order added successfully:', response.data);
-
+                alert('Order added successfully!');
                 setQuantity(0);
                 setIsEditingQuantity(false);
-
-                // 可以添加额外的逻辑，比如显示成功消息等  
 
             } catch (error) {
                 console.error('Error adding order:', error.response ? error.response.data : error.message);
@@ -71,7 +73,7 @@ const GoodsRow = ({ product }) => {
                     <button onClick={() => { if (user.userType === 'user') { setIsEditingQuantity(true); setIsModalOpen(true); } }}>Add to Cart</button>
                     {isModalOpen && (
                         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-                            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ height: '250px' }}>
                                 <h3>正在下单{product.name}</h3>
                                 <input
                                     type="text"
@@ -79,11 +81,14 @@ const GoodsRow = ({ product }) => {
                                     onChange={handleQuantityChange}
                                     placeholder="Quantity"
                                 />
-                                <div>
-                                    <button onClick={() => setQuantity(Math.max(quantity - 1, 0))}>-</button>
-                                    <span>{quantity} </span>
-                                    <button onClick={() => setQuantity(quantity + 1)}>+</button>
-                                </div>
+                                <input type="text"
+                                    value={destination}
+                                    onChange={(e) => setDestination(e.target.value)}
+                                    placeholder="Destination"></input>
+                                <input type="text"
+                                    value={phone}
+                                    onChange={(e) => setPhone(e.target.value)}
+                                    placeholder="Phone"></input>
                                 <div style={{ marginTop: '10px' }}>Total Price: {totalPrice.toFixed(2)}</div>
                                 <button onClick={() => { setIsEditingQuantity(false); setIsModalOpen(false); }} style={{ marginTop: '10px' }}>Cancel</button>
                                 <button onClick={handleConfirmPurchase} style={{ marginLeft: '10px' }}>

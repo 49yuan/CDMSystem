@@ -296,6 +296,18 @@ td {
     background-color: #0056b3;
 }
 
+table .low-stock {
+    background-color: #ffe0e0;
+}
+
+.low-stock .actions1 button {
+    background-color: #e25656;
+}
+
+.low-stock .actions1 button:hover {
+    background-color: #d14444;
+}
+
 /* 下单卡片 */
 .modal-overlay {
     position: fixed;
@@ -312,7 +324,7 @@ td {
 
 .modal-overlay .modal-content {
     width: 240px;
-    height: 200px;
+    height: 220px;
     background-color: white;
     padding: 20px;
     border-radius: 5px;
@@ -320,7 +332,7 @@ td {
 }
 
 .modal-overlay .modal-content input {
-    margin: 20px 0 10px 0;
+    margin: 10px 0 0 0;
 }
 
 .modal-overlay .modal-content button {
@@ -362,6 +374,12 @@ td {
     border-radius: 10px;
 }
 
+.card .card-content {
+    position: relative;
+    top: 10px;
+    height: 50%;
+}
+
 .card .card-content h3 {
     font-weight: 700;
     font-size: 1.3rem;
@@ -385,8 +403,8 @@ td {
     border-radius: 15px;
     border-bottom-right-radius: 0;
     background-color: #121212;
-    margin-top: 40px;
-    margin-bottom: 30px;
+    position: absolute;
+    bottom: 30px;
     padding: 5px 0 0 10px;
 }
 
@@ -443,6 +461,7 @@ td {
 }
 
 .order {
+    overflow: hidden;
     width: 380px;
     height: 195px;
     margin-right: 20px;
@@ -483,8 +502,8 @@ td {
     color: #4e4e4e;
     display: inline-block;
     position: relative;
-    top: -15px;
-    left: 20px;
+    top: -20px;
+    left: 13px;
 }
 
 .order .order_details span {

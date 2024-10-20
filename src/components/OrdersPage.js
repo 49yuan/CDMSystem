@@ -18,25 +18,43 @@ const OrdersPage = () => {
     //如果库存小于订单所需商品数量，提醒补货（该商品正在进行的出库订单 - 正在进行的采购订单 + 库存 - 安全库存）alter
     //采购订单处理：点击变更状态,后台相应变化，订单结束，仓库变换
     //用户：物流订单
-    const initialOrders = [
-        { order_id: 1, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '1', quantity: '2', name: '美的空调', image: 'https://img10.360buyimg.com/n1/s450x450_jfs/t1/197702/15/45785/108198/67079c22Fc269d324/9f3121e970f41906.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
-        { order_id: 2, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '2', quantity: '1', name: '长虹空调', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
-        { order_id: 3, order_type: 'purchase', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '供应商1', product_id: '4', quantity: '5', name: '长虹空调2', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '654321' },
-        { order_id: 1, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '1', quantity: '2', name: '美的空调', image: 'https://img10.360buyimg.com/n1/s450x450_jfs/t1/197702/15/45785/108198/67079c22Fc269d324/9f3121e970f41906.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
-        { order_id: 2, order_type: 'selling', status: 'completed', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '2', quantity: '1', name: '长虹空调', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
-    ];
+    // const initialOrders = [
+    //     { order_id: 1, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '1', quantity: '2', name: '美的空调', image: 'https://img10.360buyimg.com/n1/s450x450_jfs/t1/197702/15/45785/108198/67079c22Fc269d324/9f3121e970f41906.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
+    //     { order_id: 2, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '2', quantity: '1', name: '长虹空调', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
+    //     { order_id: 3, order_type: 'purchase', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '供应商1', product_id: '4', quantity: '5', name: '长虹空调2', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '654321' },
+    //     { order_id: 1, order_type: 'selling', status: 'ongoing', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '1', quantity: '2', name: '美的空调', image: 'https://img10.360buyimg.com/n1/s450x450_jfs/t1/197702/15/45785/108198/67079c22Fc269d324/9f3121e970f41906.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
+    //     { order_id: 2, order_type: 'selling', status: 'completed', date: '2024-10-10', initiator_or_supplier: '用户1', product_id: '2', quantity: '1', name: '长虹空调', image: 'https://img14.360buyimg.com/n1/s450x450_jfs/t1/100487/19/49284/5272/66ed4049Fbb1c2a02/b749712e60e2559c.jpg.avif', phone: '123456', destination: '厦门大学二号鸟箱' },
+    // ];
     useEffect(() => {
-        setOrders(initialOrders);
+        axios.get('http://localhost:3001/api/orders')
+            .then(response => {
+                setOrders(response.data);
+            })
+            .catch(error => console.error('Error fetching orders:', error));
     }, []);
-    const handleStatusChange = (order) => {
-        const updatedOrders = orders.map(o => {
-            if (o.order_id === order.order_id) {
-                return { ...o, status: 'completed' };
+
+    const handleStatusChange = async (order) => {
+        try {
+            const response = await axios.post('http://localhost:3001/api/completedorder', {
+                order_id: order.order_id
+            });
+            if (response.data.success) {
+                const updatedOrders = orders.map(o => {
+                    if (o.order_id === order.order_id) {
+                        return { ...o, status: 'completed' };
+                    }
+                    return o;
+                });
+                setOrders(updatedOrders);
+            } else {
+                alert('Error completing order: ' + response.data.message);
             }
-            return o;
-        });
-        setOrders(updatedOrders);
+        } catch (error) {
+            console.error('Error during API call:', error);
+            alert('An error occurred while processing your request.');
+        }
     };
+
     const handleShipment = (order) => {
         if (order.status === 'ongoing') {
             axios.get('http://localhost:3001/api/checkInventory')
@@ -54,13 +72,15 @@ const OrdersPage = () => {
         }
     };
     const handleCancel = (order) => {
-        const updatedOrders = orders.map(o => {
-            if (o.order_id === order.order_id) {
-                return { ...o, status: 'failed' };
-            }
-            return o;
-        });
-        setOrders(updatedOrders);
+        if (order.status === 'ongoing') {
+            const updatedOrders = orders.map(o => {
+                if (o.order_id === order.order_id) {
+                    return { ...o, status: 'failed' };
+                }
+                return o;
+            });
+            setOrders(updatedOrders);
+        }
     };
     // <button onClick={() => onStatusChange(!order.order_type)} >
     //     {order.order_type === 1 ? 'ongoing' : 'completed'}
@@ -97,7 +117,7 @@ const OrdersPage = () => {
                                     <span>Initator: {order.initiator_or_supplier}</span>
                                     <span>Phone: {order.phone}</span>
                                     <div>Address: {order.destination}</div>
-                                    <div>Order time: {order.date}</div>
+                                    <div>Order time: {order.time}</div>
                                 </div>
                                 <div className='order_action'>
                                     <button onClick={() => handleCancel(order)}>Cancel order</button>
@@ -120,7 +140,7 @@ const OrdersPage = () => {
                                 <div className='order_name'>{order.name}<span>Quantity: {order.quantity}</span></div>
                                 <span>Supplier: {order.initiator_or_supplier}</span>
                                 <div>Phone: {order.phone}</div>
-                                <div>Order time: {order.date}</div>
+                                <div>Order time: {order.time}</div>
                             </div>
                             <div className='order_action'>
                                 <button onClick={() => handleStatusChange(order)}>Warehousing</button>
